@@ -112,10 +112,14 @@ Citation
 
 If you use this implementation, please cite:
 
-@article{suleymanoglu2026srtrbm,
-  title={Controlled Thermal Non-Equilibrium Training of Restricted Boltzmann Machines},
-  author={Süleymanoğlu, Görkem Can},
-  year={2026}
+@software{suleymanoglu2026srtrbm,
+  author       = {Süleymanoğlu, Görkem Can},
+  title        = {Self-Regulated Thermodynamic RBM (SR-TRBM)},
+  year         = {2026},
+  version      = {v1.0.2},
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.18778553},
+  url          = {https://doi.org/10.5281/zenodo.18778553}
 }
 
 ---
