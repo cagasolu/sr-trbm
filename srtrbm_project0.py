@@ -75,7 +75,7 @@ class HybridThermodynamicRBM:
             device_type="cuda",
             learning_rate=5e-4,
             epochs=400,
-            gibbs_steps=20,
+            gibbs_steps=1,
             batch_size=128,
             lambda_gain=0.01,
             flip_smoothing=0.01,
@@ -212,16 +212,16 @@ class HybridThermodynamicRBM:
                 if v_pos.shape[0] != self.batch_size:
                     continue
 
-                # Negative phase
+                # Negative phase (Persistent Contrastive Divergence - PCD-k)
+                # The persistent Markov chain is advanced by k Gibbs steps
+                # starting from the previous minibatch state. This provides
+                # a deeper negative-phase approximation to the model distribution
+                # compared to single-step updates. The chain is not reinitialized,
+                # ensuring long-run mixing across minibatches.
+
                 v_prev = persistent_v
 
-                h_prev = torch.bernoulli(
-                    torch.sigmoid((v_prev @ self.W + self.hidden_bias) / T)
-                )
-
-                v_neg = torch.bernoulli(
-                    torch.sigmoid((h_prev @ self.W.T + self.visible_bias) / T)
-                )
+                v_neg = self.gibbs_chain(v_prev, T, steps=self.gibbs_steps)
 
                 persistent_v = v_neg
 
@@ -263,8 +263,8 @@ class HybridThermodynamicRBM:
             error = flip_epoch - self.flip_reference
 
             self.log_temperature = (
-                    self.log_temperature
-                    - self.lambda_gain * error
+                    self.log_temperature -
+                    self.lambda_gain * error
             )
 
             # Macroscopic control (Exact Cesàro average)
