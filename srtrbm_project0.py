@@ -4,38 +4,38 @@
 #
 #   Copyright © 2026 Görkem Can Süleymanoğlu
 #
-#   This implementation operationalizes the theoretical framework developed 
-#   in the accompanying manuscript on thermodynamic regulation of finite-time 
+#   This implementation operationalizes the theoretical framework developed
+#   in the accompanying manuscript on thermodynamic regulation of finite-time
 #   training in energy-based models.
 #
-#   Training is performed using Persistent Contrastive Divergence (PCD-k), 
-#   meaning that the negative phase is approximated via short-run Gibbs chains. 
-#   The sampler does not converge to equilibrium within each epoch. 
+#   Training is performed using Persistent Contrastive Divergence (PCD-k),
+#   meaning that the negative phase is approximated via short-run Gibbs chains.
+#   The sampler does not converge to equilibrium within each epoch.
 #   Instead, it operates in a finite-time stochastic regime
 #   whose mixing properties evolve as parameters change.
 #
-#   Under fixed temperature, growth in effective fields (e.g., v^T W_j) 
-#   rescales transition probabilities and may lead to conductance 
-#   collapse. This manifests as Gibbs freezing, localization 
-#   of the negative phase, and potential linear parameter 
+#   Under fixed temperature, growth in effective fields (e.g., v^T W_j)
+#   rescales transition probabilities and may lead to conductance
+#   collapse. This manifests as Gibbs freezing, localization
+#   of the negative phase, and potential linear parameter
 #   drift in the absence of sufficient regularization.
 #
-#   The implementation monitors stochastic activity through the empirical flip rate r_t, 
+#   The implementation monitors stochastic activity through the empirical flip rate r_t,
 #   defined as the fraction of visible units that change state between successive
 #   Gibbs updates. This serves as a measurable surrogate for transition
 #   intensity and mixing behavior.
 #
-#   A microscopic thermodynamic state variable (log_temperature) evolves 
+#   A microscopic thermodynamic state variable (log_temperature) evolves
 #   according to a discrete-time feedback rule:
 #
 #       λ_{t+1} = λ_t - η_λ (r_t - c_t)
 #
-#   where c_t is an exponentially smoothed reference level of flip activity. 
+#   where c_t is an exponentially smoothed reference level of flip activity.
 #   This notation introduces a closed-loop regulation mechanism for stochastic scale.
 #
-#   At the macroscopic level, the cumulative free-energy imbalance between data and model 
+#   At the macroscopic level, the cumulative free-energy imbalance between data and model
 #   distributions is tracked using a Cesàro average. The global temperature includes
-#   a component proportional to this running energy gap, guaranteeing 
+#   a component proportional to this running energy gap, guaranteeing
 #   coherence between long-horizon thermodynamic drift
 #   and sampling scale.
 #
@@ -140,7 +140,7 @@ class HybridThermodynamicRBM:
 
         self.energy_count = 0
 
-        self.bias_decay = 1e-4
+        self.bias_decay = 4e-6
 
         # Model parameters
 
