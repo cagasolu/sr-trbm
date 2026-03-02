@@ -3,7 +3,7 @@ Self-Regulated Thermodynamic RBM: Controlled non-equilibrium training with endog
 
 Hybrid Thermodynamic Restricted Boltzmann Machine with endogenous micro–macro temperature regulation and AIS-based partition estimation.
 
----
+- Note: In the code implementations, the bias decay was set to 0.
 
 Overview
 
