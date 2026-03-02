@@ -29,7 +29,7 @@ Core Features
 
 * Endogenous micro–macro temperature control
 * Adaptive flip-rate feedback regulation
-* Persistent Contrastive Divergence (PCD-20)
+* Persistent Contrastive Divergence (PCD-K, K is a natural number.)
 * Annealed Importance Sampling (AIS)
 * Effective inverse temperature diagnostics
 * Full thermodynamic trajectory monitoring
@@ -76,7 +76,7 @@ Frozen tuned temperature:
 
 python srtrbm_project0.py --temperature frozen
 
-Each seed runs independently. Multi-GPU execution is supported using explicit CUDA device binding in PyTorch.
+Each seed runs independently. Multi-GPU execution is supported in PyTorch via explicit CUDA device binding.
 
 ---
 
