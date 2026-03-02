@@ -4,6 +4,41 @@
 #
 #   Copyright © 2026 Görkem Can Süleymanoğlu
 #
+#   This implementation operationalizes the theoretical framework developed 
+#   in the accompanying manuscript on thermodynamic regulation of finite-time 
+#   training in energy-based models.
+#
+#   Training is performed using Persistent Contrastive Divergence (PCD-k), 
+#   meaning that the negative phase is approximated via short-run Gibbs chains. 
+#   The sampler does not converge to equilibrium within each epoch. 
+#   Instead, it operates in a finite-time stochastic regime
+#   whose mixing properties evolve as parameters change.
+#
+#   Under fixed temperature, growth in effective fields (e.g., v^T W_j) 
+#   rescales transition probabilities and may lead to conductance 
+#   collapse. This manifests as Gibbs freezing, localization 
+#   of the negative phase, and potential linear parameter 
+#   drift in the absence of sufficient regularization.
+#
+#   The implementation monitors stochastic activity through the empirical flip rate r_t, 
+#   defined as the fraction of visible units that change state between successive
+#   Gibbs updates. This serves as a measurable surrogate for transition
+#   intensity and mixing behavior.
+#
+#   A microscopic thermodynamic state variable (log_temperature) evolves 
+#   according to a discrete-time feedback rule:
+#
+#       λ_{t+1} = λ_t - η_λ (r_t - c_t)
+#
+#   where c_t is an exponentially smoothed reference level of flip activity. 
+#   This notation introduces a closed-loop regulation mechanism for stochastic scale.
+#
+#   At the macroscopic level, the cumulative free-energy imbalance between data and model 
+#   distributions is tracked using a Cesàro average. The global temperature includes
+#   a component proportional to this running energy gap, guaranteeing 
+#   coherence between long-horizon thermodynamic drift
+#   and sampling scale.
+#
 #   Experimental Execution Notes:
 #
 #   This script is designed for controlled GPU execution under Linux (Ubuntu recommended).
@@ -95,6 +130,7 @@ class HybridThermodynamicRBM:
         self.batch_size = batch_size
 
         # Thermodynamic parameters
+
         self.lambda_gain = lambda_gain
         self.flip_smoothing = flip_smoothing
         self.energy_temp_scale = energy_temp_scale
@@ -104,12 +140,16 @@ class HybridThermodynamicRBM:
 
         self.energy_count = 0
 
+        self.bias_decay = 1e-4
+
         # Model parameters
+
         self.W = torch.randn(n_visible, n_hidden, device=self.device) * 0.05
         self.visible_bias = torch.zeros(n_visible, device=self.device)
         self.hidden_bias = torch.zeros(n_hidden, device=self.device)
 
         # Thermodynamic states
+
         self.log_temperature = torch.tensor(0.0, device=self.device)
         self.flip_reference = torch.tensor(0.0, device=self.device)
         self.energy_avg = torch.tensor(0.0, device=self.device)
@@ -117,6 +157,7 @@ class HybridThermodynamicRBM:
         self.persistent_sampling = None
 
         # Monitoring histories
+
         self.flip_hist = []
         self.c_hist = []
         self.weight_norm_hist = []
@@ -229,6 +270,7 @@ class HybridThermodynamicRBM:
                 flip_rates.append(flip)
 
                 # Expectations
+
                 h_pos = torch.sigmoid((v_pos @ self.W + self.hidden_bias) / T)
                 h_neg = torch.sigmoid((v_neg @ self.W + self.hidden_bias) / T)
 
@@ -236,10 +278,21 @@ class HybridThermodynamicRBM:
                 dW -= self.weight_decay * self.W
 
                 self.W += self.lr * dW
-                self.visible_bias += self.lr * (v_pos - v_neg).mean(0)
-                self.hidden_bias += self.lr * (h_pos - h_neg).mean(0)
+
+                # ℓ2 regularization on biases (bias decay)
+                # This introduces a linear contraction term:
+                # b_{t+1} = (1 - ηλ) b_t + η g_t
+                # ensuring global boundedness of bias parameters
+                # and preventing linear drift under stochastic updates.
+
+                db_v = (v_pos - v_neg).mean(0) - self.bias_decay * self.visible_bias
+                db_h = (h_pos - h_neg).mean(0) - self.bias_decay * self.hidden_bias
+
+                self.visible_bias += self.lr * db_v
+                self.hidden_bias += self.lr * db_h
 
                 # Energy gap
+
                 F_data_batch = self.free_energy(v_pos, T).mean()
                 F_model_batch = self.free_energy(v_neg, T).mean()
 
@@ -248,6 +301,7 @@ class HybridThermodynamicRBM:
                 F_model_batches.append(F_model_batch)
 
             # Epoch statistics
+
             flip_epoch = torch.stack(flip_rates).mean()
             energy_gap_epoch = torch.stack(energy_gaps).mean()
 
@@ -255,6 +309,7 @@ class HybridThermodynamicRBM:
             F_model_epoch = torch.stack(F_model_batches).mean().item()
 
             # Microscopic control
+
             self.flip_reference = (
                     (1 - self.flip_smoothing) * self.flip_reference
                     + self.flip_smoothing * flip_epoch
@@ -268,6 +323,7 @@ class HybridThermodynamicRBM:
             )
 
             # Macroscopic control (Exact Cesàro average)
+
             self.energy_count += 1
 
             self.energy_avg = self.energy_avg + (
@@ -275,6 +331,7 @@ class HybridThermodynamicRBM:
             ) / self.energy_count
 
             # Diagnostics
+
             current_T = self.temperature()
 
             T_micro = torch.exp(self.log_temperature).item()
@@ -303,6 +360,7 @@ class HybridThermodynamicRBM:
             delta_w = torch.norm(self.W - W_before).item()
 
             # Store histories
+
             self.flip_hist.append(flip_epoch.item())
             self.c_hist.append(self.flip_reference.item())
             self.weight_norm_hist.append(weight_norm)
@@ -318,6 +376,7 @@ class HybridThermodynamicRBM:
             self.F_gap_hist.append(F_data_epoch - F_model_epoch)
 
             # Progress bar
+
             epoch_bar.set_postfix({
                 "T": f"{current_T.item():.3f}",
                 "flip": f"{flip_epoch.item():.3f}",
@@ -364,12 +423,15 @@ class HybridThermodynamicRBM:
         T_base = self.temperature()
 
         # Ensure valid parameters
+
         hidden_refine_steps = max(1, int(hidden_refine_steps))
         final_cool_fraction = float(min(max(final_cool_fraction, 0.0), 1.0))
 
         # Persistent initialization
+
         # If a previous sampling state exists and matches required shape,
         # reuse it to avoid unnecessary burn-in.
+
         if (
                 hasattr(self, "persistent_sampling")
                 and self.persistent_sampling is not None
@@ -378,19 +440,23 @@ class HybridThermodynamicRBM:
             v = self.persistent_sampling.clone()
         else:
             # Otherwise initialize chains from uniform Bernoulli noise
+
             v = torch.bernoulli(
                 torch.rand(n_chains, self.n_visible, device=device)
             )
 
         # Determine when deterministic cooling begins
+
         final_cool_start = int((1.0 - final_cool_fraction) * steps)
 
         for t in range(steps):
 
-            # Temperature schedule
-            # During early iterations, add multiplicative log-normal noise
-            # around the learned base temperature.
+            # Temperature schedule:
+            # During early iterations, add multiplicative
+            # log-normal noise around the learned base temperature.
+
             # In later iterations, remove noise for sharpening.
+
             if t < final_cool_start and final_cool_start > 0:
                 anneal_factor = 1.0 - (t / final_cool_start)
                 noise_scale = temp_noise * anneal_factor
@@ -403,12 +469,14 @@ class HybridThermodynamicRBM:
 
             # Hidden refinement step
             # The first hidden sample guarantees definition of h
+
             h = torch.bernoulli(
                 torch.sigmoid((v @ self.W + self.hidden_bias) / T)
             )
 
             # Additional refinements stabilize the latent configuration
             # before projecting back to visible space.
+
             for _ in range(hidden_refine_steps - 1):
                 h = torch.bernoulli(
                     torch.sigmoid((v @ self.W + self.hidden_bias) / T)
@@ -416,11 +484,13 @@ class HybridThermodynamicRBM:
 
             # Visible update
             # This produces the next Gibbs state.
+
             v = torch.bernoulli(
                 torch.sigmoid((h @ self.W.T + self.visible_bias) / T)
             )
 
         # Store final state for persistent continuation
+
         self.persistent_sampling = v.detach()
 
         return v
@@ -582,7 +652,8 @@ class HybridThermodynamicRBM:
 
         betas = torch.linspace(0.0, 1.0, n_intermediate, device=device)
 
-        # Base model: uniform Bernoulli(0.5)
+        # Base model: uniform Bernoulli(0.5)4
+
         logZ0 = (nv + nh) * math.log(2.0)
 
         v = torch.bernoulli(torch.full((n_runs, nv), 0.5, device=device))
@@ -669,6 +740,7 @@ def sample_quality_metrics(model, real_data, n_samples=10000):
     samples = samples.float()
 
     # Pixel entropy
+
     proposition_resemble = samples.mean(0)
     pixel_entropy = -(proposition_resemble *
                       torch.log(proposition_resemble + 1e-8) +
@@ -676,12 +748,14 @@ def sample_quality_metrics(model, real_data, n_samples=10000):
                       torch.log(1 - proposition_resemble + 1e-8)).mean()
 
     # Diversity
+
     flat = samples.view(n_samples, -1)
     subset = flat[:1000]
     dists = (subset.unsqueeze(1) != subset.unsqueeze(0)).float().mean(dim=2)
     diversity = dists.mean().item()
 
     # Mean image distance
+
     real_mean = real_data.float().mean(0)
     gen_mean = samples.mean(0)
     mean_l2 = torch.norm(real_mean - gen_mean).item()
@@ -730,6 +804,7 @@ def worker(Gpu_Id, seed_round, consequences):
     Test_pl = last_model.pseudo_likelihood(test_data)
 
     # Reconstruction
+
     reconstruction = last_model.reconstruct(test_data)
     reconstruction_mse = torch.mean(
         (test_data - reconstruction) ** 2
@@ -738,6 +813,7 @@ def worker(Gpu_Id, seed_round, consequences):
     recon_acc = last_model.reconstruction_accuracy(test_data)
 
     # Thermodynamic diagnostics
+
     final_temperature = last_model.temperature().item()
     weight_norm = torch.norm(last_model.W).item()
     effective_beta = weight_norm / final_temperature
@@ -746,6 +822,7 @@ def worker(Gpu_Id, seed_round, consequences):
     prof_filename = f"samples_prof_gpu{Gpu_Id}_seed{seed_round}.png"
 
     # Basit ensemble save
+
     last_model.save_ensemble_samples(
         filename=sample_filename,
         n_display=1200,
@@ -753,6 +830,7 @@ def worker(Gpu_Id, seed_round, consequences):
     )
 
     # Professional ensemble + diagnostics
+
     diagnostics = last_model.save_professional_samples(
         filename=prof_filename,
         n_display=1200,
@@ -830,6 +908,7 @@ def worker(Gpu_Id, seed_round, consequences):
     plt.figure(figsize=(10, 14))
 
     # Weight norm
+
     plt.subplot(4, 1, 1)
     plt.plot(last_model.weight_norm_hist, linewidth=2)
     plt.title("Weight Norm Evolution")
@@ -837,6 +916,7 @@ def worker(Gpu_Id, seed_round, consequences):
     plt.grid(alpha=0.3)
 
     # Effective beta
+
     plt.subplot(4, 1, 2)
     plt.plot(last_model.beta_eff_hist, linewidth=2)
     plt.title(r"Effective Inverse Temperature $\beta_{\mathrm{eff}}$")
@@ -844,6 +924,7 @@ def worker(Gpu_Id, seed_round, consequences):
     plt.grid(alpha=0.3)
 
     # Free energy comparison
+
     plt.subplot(4, 1, 3)
     plt.plot(last_model.F_data_hist, linewidth=2, label=r"$F_{data}$")
     plt.plot(last_model.F_model_hist, linewidth=2, label=r"$F_{model}$")
@@ -853,6 +934,7 @@ def worker(Gpu_Id, seed_round, consequences):
     plt.legend()
 
     # Spectral beta
+
     plt.subplot(4, 1, 4)
     plt.plot(last_model.spectral_beta_hist, linewidth=2)
     plt.title(r"Spectral Inverse Temperature $\beta_{spectral}$")
