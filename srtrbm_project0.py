@@ -140,7 +140,7 @@ class HybridThermodynamicRBM:
 
         self.energy_count = 0
 
-        self.bias_decay = 4e-6
+        self.bias_decay = 0.0
 
         # Model parameters
 
@@ -998,3 +998,4 @@ if __name__ == "__main__":
         print(f"Generated Samples File   : {result['sample_file']}")
 
 # Self-Regulated Thermodynamic RBM (SR-TRBM) with Endogenous Micro–Macro Temperature Dynamics
+
