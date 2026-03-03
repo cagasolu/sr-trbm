@@ -14,7 +14,7 @@ Controlled Thermal Non-Equilibrium Training of Restricted Boltzmann Machines.
 
 The proposed model tackles a structural instability mechanism inherent to fixed-temperature, finite-time Contrastive Divergence training. When effective fields diverge under a fixed sampling temperature, Gibbs transition probabilities decay, conductance collapses, and the negative phase localizes, potentially inducing linear parameter drift.
 
-SR-TRBM eliminates this vagueness in representation by introducing:
+SR-TRBM addresses this structural instability by introducing:
 
 * Endogenous temperature dynamics
 * Micro-level flip-rate feedback regulation
@@ -113,13 +113,12 @@ Citation
 If you use this implementation, please cite:
 
 @software{suleymanoglu2026srtrbm,
-  author       = {Süleymanoğlu, Görkem Can},
-  title        = {Self-Regulated Thermodynamic RBM (SR-TRBM)},
-  year         = {2026},
-  version      = {v1.0.2},
-  publisher    = {Zenodo},
-  doi          = {10.5281/zenodo.18778553},
-  url          = {https://doi.org/10.5281/zenodo.18778553}
+  author    = {Süleymanoğlu, Görkem Can},
+  title     = {Self-Regulated Thermodynamic RBM (SR-TRBM)},
+  year      = {2026},
+  publisher = {Zenodo},
+  doi       = {10.5281/zenodo.18778493},
+  url       = {https://doi.org/10.5281/zenodo.18778493}
 }
 
 ---
