@@ -999,3 +999,4 @@ if __name__ == "__main__":
 
 # Self-Regulated Thermodynamic RBM (SR-TRBM) with Endogenous Micro–Macro Temperature Dynamics
 
+
