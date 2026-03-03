@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as follows."
 title: "Self-Regulated Thermodynamic RBM (SR-TRBM)"
-version: "v1.0.2"
-doi: "10.5281/zenodo.18778553"
-date-released: 2026-02-26
+version: "v1.0.5"
+doi: "10.5281/zenodo.18778493"
+date-released: 2026-03-03
 repository-code: "https://github.com/cagasolu/sr-trbm"
 license: "BSD-3-Clause"
 
