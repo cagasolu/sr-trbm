@@ -41,7 +41,7 @@ Model Configuration (Paper Setting)
 * Visible units: 784
 * Hidden units: 512
 * Training epochs: 400
-* Gibbs steps: 20
+* Gibbs steps: 1
 * Batch size: 128
 * Learning rate: 5e-4
 * Weight decay: 1e-4
@@ -66,15 +66,15 @@ Running Experiments
 
 Adaptive regime:
 
-python srtrbm_project0.py --temperature adaptive
+python srtrbm_project0.py --temperature adaptive, fixed_temperature=None
 
 Fixed temperature baseline:
 
-python srtrbm_project0.py --temperature fixed
+python srtrbm_project0.py --temperature fixed, fixed_temperature=1.0
 
 Frozen tuned temperature:
 
-python srtrbm_project0.py --temperature frozen
+python srtrbm_project0.py --temperature frozen fixed_temperature=X, any real number
 
 Each seed runs independently. Multi-GPU execution is supported in PyTorch via explicit CUDA device binding.
 
