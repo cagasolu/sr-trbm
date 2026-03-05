@@ -3,6 +3,8 @@ Self-Regulated Thermodynamic RBM: Controlled non-equilibrium training with endog
 
 [![arXiv](https://img.shields.io/badge/arXiv-2603.02525-b31b1b.svg)](https://arxiv.org/abs/2603.02525)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18778493.svg)](https://doi.org/10.5281/zenodo.18778493)
+![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)
+![Python](https://img.shields.io/badge/python-3.10-blue)
 
 Hybrid Thermodynamic Restricted Boltzmann Machine with endogenous micro–macro temperature regulation and AIS-based partition estimation.
 
