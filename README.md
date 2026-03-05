@@ -5,7 +5,7 @@
 [![arXiv](https://img.shields.io/badge/arXiv-2603.02525-b31b1b.svg)](https://arxiv.org/abs/2603.02525)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18778493.svg)](https://doi.org/10.5281/zenodo.18778493)
 
-Hybrid Thermodynamic Restricted Boltzmann Machine with endogenous micro–macro temperature regulation and AIS-based partition estimation.
+A hybrid thermodynamic Restricted Boltzmann Machine with endogenous micro–macro temperature regulation and AIS-based partition estimation.
 
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)
 ![CUDA](https://img.shields.io/badge/CUDA-enabled-green)
@@ -20,7 +20,8 @@ Hybrid Thermodynamic Restricted Boltzmann Machine with endogenous micro–macro 
 This repository implements the **Self-Regulated Thermodynamic Restricted Boltzmann Machine (SR-TRBM)** introduced in:
 
 **Görkem Can Süleymanoğlu (2026)**  
-*Thermodynamic Regulation of Finite-Time Gibbs Training in Energy-Based Models: A Restricted Boltzmann Machine Study.*
+*Thermodynamic regulation of finite-time Gibbs training in energy-based models: A restricted Boltzmann machine study.*  
+https://arxiv.org/abs/2603.02525
 
 The proposed model tackles a structural instability mechanism inherent to fixed-temperature, finite-time Contrastive Divergence training. When effective fields diverge under a fixed sampling temperature, Gibbs transition probabilities decay, sampling conductance deteriorates, and the negative phase localizes, potentially inducing linear parameter drift.
 
@@ -134,14 +135,10 @@ All experiments reported in the paper can be reproduced using the configuration 
 If you use this implementation, please cite:
 
 **Paper (arXiv)**  
-Süleymanoğlu, G. C. (2026).  
-*Thermodynamic regulation of finite-time Gibbs training in energy-based models: A restricted Boltzmann machine study.*  
-https://arxiv.org/abs/2603.02525  
+Süleymanoğlu, G. C. (2026). *Thermodynamic regulation of finite-time Gibbs training in energy-based models: A restricted Boltzmann machine study.* arXiv. https://arxiv.org/abs/2603.02525
 
 **Software (Zenodo)**  
-Süleymanoğlu, G. C. (2026).  
-*Self-Regulated Thermodynamic RBM (SR-TRBM)* [Software].  
-https://doi.org/10.5281/zenodo.18778493  
+Süleymanoğlu, G. C. (2026). *Self-regulated thermodynamic RBM (SR-TRBM)* [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.18778493
 
 ---
 
