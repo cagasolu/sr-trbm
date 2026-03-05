@@ -112,14 +112,11 @@ Citation
 
 If you use this implementation, please cite:
 
-@software{suleymanoglu2026srtrbm,
-  author    = {Süleymanoğlu, Görkem Can},
-  title     = {Self-Regulated Thermodynamic RBM (SR-TRBM)},
-  year      = {2026},
-  publisher = {Zenodo},
-  doi       = {10.5281/zenodo.18778493},
-  url       = {https://doi.org/10.5281/zenodo.18778493 }
-}
+Paper (arXiv):
+Süleymanoğlu, G. C. (2026). Thermodynamic regulation of finite-time Gibbs training in energy-based models: A restricted Boltzmann machine study. arXiv. https://arxiv.org/abs/2603.02525
+
+Software (Zenodo):
+Süleymanoğlu, G. C. (2026). Self-Regulated Thermodynamic RBM (SR-TRBM) [Software]. Zenodo. https://doi.org/10.5281/zenodo.18778493
 
 ---
 
