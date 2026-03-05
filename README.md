@@ -7,6 +7,7 @@ Self-Regulated Thermodynamic RBM: Controlled non-equilibrium training with endog
 Hybrid Thermodynamic Restricted Boltzmann Machine with endogenous micro–macro temperature regulation and AIS-based partition estimation.
 
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.x-ee4c2c.svg)
+![CUDA](https://img.shields.io/badge/CUDA-enabled-green)
 ![Python](https://img.shields.io/badge/python-3.10-blue)
 
 - Note: In the code implementations, the bias decay has been set to 0.
@@ -16,9 +17,9 @@ Overview
 This repository implements the Self-Regulated Thermodynamic Restricted Boltzmann Machine (SR-TRBM) introduced in:
 
 Görkem Can Süleymanoğlu (2026).
-Controlled Thermal Non-Equilibrium Training of Restricted Boltzmann Machines.
+Thermodynamic Regulation of Finite-Time Gibbs Training in Energy-Based Models: A Restricted Boltzmann Machine Study.
 
-The proposed model tackles a structural instability mechanism inherent to fixed-temperature, finite-time Contrastive Divergence training. When effective fields diverge under a fixed sampling temperature, Gibbs transition probabilities decay, conductance collapses, and the negative phase localizes, potentially inducing linear parameter drift.
+The proposed model tackles a structural instability mechanism inherent to fixed-temperature, finite-time Contrastive Divergence training. When effective fields diverge under a fixed sampling temperature, Gibbs transition probabilities decay, sampling conductance deteriorates, and the negative phase localizes, potentially inducing linear parameter drift.
 
 SR-TRBM addresses this structural instability by introducing:
 
@@ -39,6 +40,7 @@ Core Features
 * Annealed Importance Sampling (AIS)
 * Effective inverse temperature diagnostics
 * Full thermodynamic trajectory monitoring
+* Fully GPU-accelerated Gibbs sampling and parameter updates
 
 ---
 
@@ -72,15 +74,15 @@ Running Experiments
 
 Adaptive regime:
 
-python srtrbm_project0.py --temperature adaptive, fixed_temperature=None
+python srtrbm_project0.py --temperature adaptive --fixed_temperature None
 
 Fixed temperature baseline:
 
-python srtrbm_project0.py --temperature fixed, fixed_temperature=1.0
+python srtrbm_project0.py --temperature fixed --fixed_temperature 1.0
 
 Frozen tuned temperature:
 
-python srtrbm_project0.py --temperature frozen fixed_temperature=X, any real number
+python srtrbm_project0.py --temperature frozen --fixed_temperature X
 
 Each seed runs independently. Multi-GPU execution is supported in PyTorch via explicit CUDA device binding.
 
