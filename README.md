@@ -118,7 +118,7 @@ If you use this implementation, please cite:
   year      = {2026},
   publisher = {Zenodo},
   doi       = {10.5281/zenodo.18778493},
-  url       = {https://doi.org/10.5281/zenodo.18778493}
+  url       = {https://doi.org/10.5281/zenodo.18778493 }
 }
 
 ---
